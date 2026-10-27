@@ -100,6 +100,7 @@ export class NysFeedback extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--nys-space-100);
+      margin: 0;
       color: var(--nys-color-success-strong);
       font-size: var(--nys-font-size-ui-lg);
       font-weight: var(--nys-font-weight-semibold);

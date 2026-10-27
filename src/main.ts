@@ -1448,6 +1448,13 @@ async function main(): Promise<void> {
     window.location.hash,
     PLAYGROUND_CONFIG.defaultDeck,
   );
+  // A bare URL opens the default deck. Name it in the URL too, so a reload or
+  // a copied link opens the same deck instead of the scratch pad.
+  const url = new URL(window.location.href);
+  if (route.kind === 'deck' && !url.searchParams.has('deck')) {
+    url.searchParams.set('deck', route.id);
+    window.history.replaceState(window.history.state, '', url);
+  }
   if (route.kind === 'home') {
     await startHome(() => {
       required<HTMLElement & {open?: boolean}>('#settings-modal').open = true;
