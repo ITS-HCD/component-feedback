@@ -1,0 +1,19 @@
+.layouts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nys-space-500);
+  padding-block: var(--nys-space-400);
+}
+
+.layouts__section h2 {
+  margin: 0;
+  font-size: var(--nys-font-size-h4);
+}
+
+.layouts__section p {
+  margin-block: var(--nys-space-50) var(--nys-space-200);
+}
+
+.layouts__phone {
+  max-width: 22.5rem;
+}

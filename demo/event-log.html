@@ -1,0 +1,35 @@
+<div class="nys-grid-container demo">
+  <div class="nys-grid-row nys-grid-gap-400">
+    <main class="nys-grid-col-12 nys-desktop:nys-grid-col-8 demo__page">
+      <h1>Renew your professional license</h1>
+      <nys-alert
+        type="success"
+        heading="Your license is renewed"
+        text="We emailed your receipt. Your new license is valid for two years."
+      ></nys-alert>
+      <nys-feedback
+        id="feedback"
+        heading="How did we do?"
+        text="You just renewed your professional license."
+      ></nys-feedback>
+    </main>
+
+    <aside class="nys-grid-col-12 nys-desktop:nys-grid-col-4 log" aria-labelledby="log-title">
+      <h2 class="log__title" id="log-title">Event log</h2>
+      <p class="log__cookie">
+        Cookie: <code id="cookie-status">none</code>
+      </p>
+      <ol class="log__list" id="log" aria-live="polite"></ol>
+      <div class="log__actions">
+        <nys-button
+          id="clear-cookie"
+          variant="outline"
+          size="sm"
+          prefixIcon="delete"
+          label="Clear cookie"
+        ></nys-button>
+        <nys-button id="clear-log" variant="ghost" size="sm" label="Clear log"></nys-button>
+      </div>
+    </aside>
+  </div>
+</div>

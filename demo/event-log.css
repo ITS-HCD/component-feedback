@@ -1,0 +1,61 @@
+.demo {
+  padding-block: var(--nys-space-400);
+}
+
+.demo__page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nys-space-300);
+}
+
+.demo__page h1 {
+  margin: 0;
+}
+
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nys-space-200);
+  padding: var(--nys-space-300);
+  background-color: var(--nys-color-base-weak);
+  border-radius: var(--nys-radius-lg);
+}
+
+.log__title {
+  margin: 0;
+  font-size: var(--nys-font-size-h4);
+}
+
+.log__cookie {
+  margin: 0;
+}
+
+.log__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nys-space-100);
+  min-height: 10rem;
+  margin: 0;
+  padding: var(--nys-space-200);
+  list-style: none;
+  background-color: var(--nys-color-surface);
+  border-radius: var(--nys-radius-md);
+  font-family: var(--nys-font-family-monospace);
+  font-size: var(--nys-font-size-body-sm);
+}
+
+.log__list:empty::before {
+  content: "Choose Good or Needs improvement to see the event.";
+  color: var(--nys-color-text-weak);
+  font-family: var(--nys-font-family-body);
+}
+
+.log__time {
+  color: var(--nys-color-text-weak);
+}
+
+.log__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nys-space-100);
+}

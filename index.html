@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <meta
+      name="description"
+      content="Edit HTML, CSS, and JavaScript against the New York State Design System and share the result with a link."
+    />
+    <title>NYSDS Playground</title>
+    <link
+      rel="preload"
+      href="/fonts/proximanova-regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/fonts/nysds-fonts.css" />
+    <style>
+      /* Keep the shell out of sight until the components are defined, so
+         the page never shows unstyled text before the design system loads.
+         A splash with the logo covers the wait. The app removes both. */
+      #app:not(.app--ready) {
+        visibility: hidden;
+      }
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: grid;
+        place-items: center;
+        background: #f6f6f6;
+      }
+      #splash[hidden] {
+        display: none;
+      }
+      #splash img {
+        width: min(80vw, 400px);
+        height: auto;
+        animation: splash-pulse 1.4s ease-in-out infinite;
+      }
+      @keyframes splash-pulse {
+        50% {
+          opacity: 0.5;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #splash img {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="splash" aria-hidden="true">
+      <img src="./nysds-logo.svg" alt="" width="1037" height="114" />
+    </div>
+    <noscript>
+      <p style="padding: 16px; font-family: sans-serif">
+        NYSDS Playground needs JavaScript to run.
+      </p>
+    </noscript>
+    <div id="app" class="app">
+      <main class="home" id="home" hidden>
+        <header class="home__header">
+          <h1 class="home__title">
+            <img class="home__logo" src="./nysds-logo.svg" alt="NYS Design System" width="1037" height="114" />
+            <span class="home__title-text">Playground</span>
+          </h1>
+          <nys-tooltip for="home-settings-button" text="Settings"></nys-tooltip>
+          <nys-button id="home-settings-button" size="sm" variant="ghost" circle label="Settings">
+            <svg
+              slot="circle-icon"
+              class="glyph"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M370-80l-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm112-260q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Z"
+              />
+            </svg>
+          </nys-button>
+        </header>
+
+        <p class="home__lede">
+          Decks are saved in this browser only, not on a server. Edit one, present it, share a slide as a link, or export a deck as JSON to back it up or move it to another browser.
+        </p>
+
+        <div class="home__actions nys-display-flex nys-flex-wrap nys-flex-gap-200">
+          <nys-button id="new-deck-button" label="New deck" prefixIcon="add"></nys-button>
+          <nys-button
+            id="import-deck-button"
+            variant="outline"
+            label="Import deck"
+            prefixIcon="upload_file"
+          ></nys-button>
+          <nys-button
+            id="scratch-button"
+            variant="ghost"
+            label="Scratch pad"
+            prefixIcon="code"
+          ></nys-button>
+        </div>
+
+        <div class="home__decks nys-grid-row nys-grid-gap" id="deck-list"></div>
+
+        <div class="home__footer">
+          <nys-button
+            id="restore-starters-button"
+            size="sm"
+            variant="ghost"
+            label="Restore starter decks"
+            prefixIcon="refresh"
+          ></nys-button>
+        </div>
+
+        <input
+          class="home__file"
+          id="import-file"
+          type="file"
+          accept=".json,application/json"
+          hidden
+        />
+      </main>
+
+      <header class="toolbar" id="toolbar">
+        <a class="toolbar__home" id="toolbar-home" href="./?home" aria-label="NYSDS Playground home">
+          <svg
+              class="toolbar__mark"
+              viewBox="13 3 205 205"
+              fill="currentColor"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M89.6599 110.894L56.3349 77.5558V48.4713H172.629L217.285 93.4372C211.299 42.5111 168.016 3 115.5 3C58.8907 3 13 48.908 13 105.538C13 128.627 20.6323 149.93 33.5051 167.07"
+              />
+              <path
+                d="M172.629 48.3945V164.733H143.556V98.0323L54.072 187.55C71.191 200.39 92.4567 208 115.5 208C172.109 208 218 162.092 218 105.462C218 101.356 217.731 97.3158 217.262 93.3366L172.629 48.3945Z"
+              />
+              <path d="M56.3291 77.5552H122.979L89.6541 110.893L56.3291 77.5552Z" />
+            </svg>
+        </a>
+
+        <h1 class="toolbar__title scratch-only" id="deck-title-static">Scratch pad</h1>
+
+        <button
+          class="toolbar__title toolbar__rename deck-only edit-only"
+          id="deck-title"
+          type="button"
+        >
+          <span id="deck-title-text"></span>
+          <nys-icon class="toolbar__rename-icon" name="edit_square" size="sm"></nys-icon>
+        </button>
+
+        <input
+          class="toolbar__rename-input deck-only"
+          id="deck-title-field"
+          type="text"
+          aria-label="Deck title"
+          hidden
+        />
+
+        <nys-tooltip class="deck-only" for="deck-settings-button" text="Deck settings"></nys-tooltip>
+        <nys-button
+          class="deck-only"
+          id="deck-settings-button"
+          size="sm"
+          variant="ghost"
+          circle
+          icon="more_vert"
+          label="Deck settings"
+        ></nys-button>
+
+        <nys-button
+          class="scratch-only"
+          id="save-as-deck-button"
+          size="sm"
+          variant="outline"
+          label="Save as deck"
+          prefixIcon="add"
+        ></nys-button>
+
+        <p class="toolbar__saved" id="saved-indicator" role="status" aria-live="polite"></p>
+
+        <div class="toolbar__spacer"></div>
+
+        <nys-select
+          id="version-select"
+          class="toolbar__select"
+          ariaLabel="Design system version"
+          width="md"
+        ></nys-select>
+
+        <nys-tooltip for="share-button" text="Share"></nys-tooltip>
+        <nys-button
+          id="share-button"
+          size="sm"
+          variant="ghost"
+          circle
+          icon="link"
+          label="Share"
+        ></nys-button>
+
+        <nys-tooltip class="deck-only" for="export-button" text="Export deck"></nys-tooltip>
+        <nys-button
+          class="deck-only"
+          id="export-button"
+          size="sm"
+          variant="ghost"
+          circle
+          icon="download"
+          label="Export deck"
+        ></nys-button>
+
+
+
+        <nys-tooltip for="settings-button" text="Settings"></nys-tooltip>
+        <nys-button
+          id="settings-button"
+          size="sm"
+          variant="ghost"
+          circle
+          label="Settings"
+        >
+          <svg
+              slot="circle-icon"
+              class="glyph"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M370-80l-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm112-260q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Z"
+              />
+            </svg>
+        </nys-button>
+
+        <nys-button id="present-button" size="sm" label="Present">
+          <svg
+              slot="prefix-icon"
+              class="glyph"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M320-200v-560l440 280-440 280Z" />
+            </svg>
+        </nys-button>
+      </header>
+
+      <main class="split" id="split">
+        <section class="split__pane split__pane--editors" id="editors" aria-label="Code editors">
+          <div class="editors__layout editors__layout--tabs" id="tabs-layout">
+            <playground-tab-bar
+              project="project"
+              editor="file-editor"
+              class="editors__tabs"
+            ></playground-tab-bar>
+            <playground-file-editor
+              id="file-editor"
+              project="project"
+              line-numbers
+              line-wrapping
+              class="editors__editor"
+            ></playground-file-editor>
+          </div>
+
+          <div class="editors__layout editors__layout--columns" id="columns-layout" hidden>
+            <section class="column" id="column-html" data-pane="html">
+              <header class="column__header">
+                <button
+                  type="button"
+                  class="column__label"
+                  id="column-html-label"
+                  aria-expanded="true"
+                  aria-controls="column-html-editor"
+                >
+                  HTML
+                </button>
+                <nys-button
+                  class="column__collapse"
+                  id="column-html-collapse"
+                  circle
+                  size="sm"
+                  variant="ghost"
+                  icon="chevron_left"
+                  label="Collapse HTML"
+                ></nys-button>
+              </header>
+              <playground-file-editor
+                id="column-html-editor"
+                class="column__editor"
+                project="project"
+                filename="snippet.html"
+                line-numbers
+                line-wrapping
+              ></playground-file-editor>
+            </section>
+            <section class="column" id="column-css" data-pane="css">
+              <header class="column__header">
+                <button
+                  type="button"
+                  class="column__label"
+                  id="column-css-label"
+                  aria-expanded="true"
+                  aria-controls="column-css-editor"
+                >
+                  CSS
+                </button>
+                <nys-button
+                  class="column__collapse"
+                  id="column-css-collapse"
+                  circle
+                  size="sm"
+                  variant="ghost"
+                  icon="chevron_left"
+                  label="Collapse CSS"
+                ></nys-button>
+              </header>
+              <playground-file-editor
+                id="column-css-editor"
+                class="column__editor"
+                project="project"
+                filename="styles.css"
+                line-numbers
+                line-wrapping
+              ></playground-file-editor>
+            </section>
+            <section class="column" id="column-js" data-pane="js">
+              <header class="column__header">
+                <button
+                  type="button"
+                  class="column__label"
+                  id="column-js-label"
+                  aria-expanded="true"
+                  aria-controls="column-js-editor"
+                >
+                  JS
+                </button>
+                <nys-button
+                  class="column__collapse"
+                  id="column-js-collapse"
+                  circle
+                  size="sm"
+                  variant="ghost"
+                  icon="chevron_left"
+                  label="Collapse JS"
+                ></nys-button>
+              </header>
+              <playground-file-editor
+                id="column-js-editor"
+                class="column__editor"
+                project="project"
+                filename="script.js"
+                line-numbers
+                line-wrapping
+              ></playground-file-editor>
+            </section>
+          </div>
+        </section>
+
+        <div
+          class="split__divider"
+          id="divider"
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label="Resize the code drawer"
+          tabindex="0"
+        ></div>
+
+        <section class="split__pane split__pane--preview" aria-label="Live preview">
+          <playground-preview
+            id="preview"
+            project="project"
+            html-file="index.html"
+            class="preview"
+          ></playground-preview>
+          <nys-button
+            class="preview__build"
+            id="build-button"
+            size="sm"
+            variant="outline"
+            label="Update preview"
+            prefixIcon="refresh"
+            hidden
+          ></nys-button>
+        </section>
+      </main>
+
+      <div class="notes" id="notes" role="dialog" aria-labelledby="notes-heading" hidden>
+        <h2 class="notes__heading" id="notes-heading">Presenter notes</h2>
+        <div class="notes__body" id="notes-body"></div>
+        <nys-button
+          id="notes-close"
+          size="sm"
+          variant="ghost"
+          label="Close notes"
+          prefixIcon="close"
+        ></nys-button>
+      </div>
+
+      <footer class="caption" id="caption" tabindex="-1">
+        <div class="caption__left">
+          <div class="caption__headline">
+            <p class="caption__title">
+              <span class="present-only">
+                <span class="caption__group" id="caption-group"></span>
+                <span id="caption-title"></span>
+              </span>
+              <span class="caption__picker edit-only">
+                <select class="caption__select" id="slide-picker" aria-label="Go to slide"></select>
+                <nys-icon class="caption__picker-icon" name="chevron_down" size="sm"></nys-icon>
+              </span>
+              <span class="caption__count" id="caption-count" data-count></span>
+            </p>
+            <p class="caption__description" id="caption-description"></p>
+          </div>
+          <nys-tooltip class="edit-only deck-only" for="slide-settings-button" text="Slide settings" inverted></nys-tooltip>
+          <nys-button
+            class="edit-only deck-only"
+            inverted
+            id="slide-settings-button"
+            size="sm"
+            variant="ghost"
+            circle
+            icon="edit_square"
+            label="Slide settings"
+          ></nys-button>
+        </div>
+
+        <div class="caption__right">
+          <nys-tooltip class="edit-only deck-only" for="add-slide-button" text="Add slide" inverted></nys-tooltip>
+          <nys-button
+            class="edit-only deck-only"
+            inverted
+            id="add-slide-button"
+            size="sm"
+            variant="ghost"
+            circle
+            icon="add"
+            label="Add slide"
+          ></nys-button>
+          <nys-tooltip class="edit-only deck-only" for="delete-slide-button" text="Delete slide" inverted></nys-tooltip>
+          <nys-button
+            class="edit-only deck-only"
+            inverted
+            id="delete-slide-button"
+            size="sm"
+            variant="ghost"
+            circle
+            icon="delete"
+            label="Delete slide"
+          ></nys-button>
+          <nys-tooltip class="edit-only deck-only" for="duplicate-slide-button" text="Duplicate slide" inverted></nys-tooltip>
+          <nys-button
+            class="edit-only deck-only"
+            inverted
+            id="duplicate-slide-button"
+            size="sm"
+            variant="ghost"
+            circle
+            icon="content_copy"
+            label="Duplicate slide"
+          ></nys-button>
+          <nys-tooltip class="present-only" for="exit-present-button" text="Edit slides" inverted></nys-tooltip>
+          <nys-button
+            class="present-only"
+            inverted
+            id="exit-present-button"
+            size="sm"
+            variant="ghost"
+            circle
+            icon="edit_square"
+            label="Edit slides"
+          ></nys-button>
+          <nys-tooltip class="caption__notes" for="notes-button" text="Presenter notes" inverted></nys-tooltip>
+          <nys-button
+            class="caption__notes"
+            inverted
+            id="notes-button"
+            size="sm"
+            variant="ghost"
+            circle
+            icon="info"
+            label="Presenter notes"
+          ></nys-button>
+          <nys-tooltip class="present-only" for="reset-slide-button" text="Reset slide" inverted></nys-tooltip>
+          <nys-button
+            class="present-only"
+            inverted
+            id="reset-slide-button"
+            size="sm"
+            variant="ghost"
+            circle
+            icon="refresh"
+            label="Reset slide"
+          ></nys-button>
+          <nys-tooltip class="present-only" for="present-settings-button" text="Settings" inverted></nys-tooltip>
+          <nys-button
+            class="present-only"
+            inverted
+            id="present-settings-button"
+            size="sm"
+            variant="ghost"
+            circle
+            icon="more_vert"
+            label="Settings"
+          ></nys-button>
+          <nys-button
+            inverted
+            id="prev-button"
+            size="sm"
+            variant="outline"
+            circle
+            icon="arrow_back"
+            label="Previous slide"
+          ></nys-button>
+          <nys-button
+            inverted
+            id="next-button"
+            size="sm"
+            variant="outline"
+            circle
+            icon="arrow_forward"
+            label="Next slide"
+          ></nys-button>
+        </div>
+      </footer>
+
+      <p class="present-hint" id="present-hint" hidden></p>
+
+      <nys-modal id="deck-modal" heading="Deck settings" width="lg">
+        <div class="settings">
+          <nys-textinput
+            id="deck-title-input"
+            label="Deck title"
+            placeholder="A name for this deck"
+          ></nys-textinput>
+          <nys-textarea
+            id="deck-description-input"
+            label="Description"
+            rows="2"
+            description="One sentence. It shows on the home page and in the slide bar."
+          ></nys-textarea>
+          <fieldset class="settings__fieldset">
+            <legend class="settings__legend">Slides</legend>
+            <p class="settings__hint">
+              Rename, regroup, reorder, or remove slides. Drag a row by its handle, press the up
+              and down keys on the handle, or use the arrows. Changes apply when you select Done.
+            </p>
+            <ol class="slide-list" id="slide-list"></ol>
+            <p class="visually-hidden" id="slide-list-status" role="status" aria-live="polite"></p>
+          </fieldset>
+          <div class="settings__code">
+            <div class="settings__legend" id="deck-base-css-label">Base CSS</div>
+            <p class="settings__hint" id="deck-base-css-hint">
+              CSS applied to every slide in this deck, without taking up room in the CSS tab.
+            </p>
+            <playground-code-editor
+              id="deck-base-css-input"
+              class="settings__editor"
+              type="css"
+              line-numbers
+              line-wrapping
+              aria-labelledby="deck-base-css-label"
+              aria-describedby="deck-base-css-hint"
+            ></playground-code-editor>
+          </div>
+        </div>
+        <div slot="actions">
+          <nys-button id="deck-modal-done" label="Done"></nys-button>
+        </div>
+      </nys-modal>
+
+      <nys-modal id="slide-modal" heading="Slide settings" width="md">
+        <div class="settings">
+          <nys-textinput id="slide-title-input" label="Title"></nys-textinput>
+          <nys-textinput
+            id="slide-group-input"
+            label="Group"
+            description="Set a section label. Slides with matching labels are grouped automatically in the slide picker."
+          ></nys-textinput>
+          <nys-textarea id="slide-description-input" label="Description" rows="2"></nys-textarea>
+          <nys-textarea
+            id="slide-notes-input"
+            label="Presenter notes"
+            rows="4"
+            description="Shown only to you, with the n key while presenting."
+          ></nys-textarea>
+          <fieldset class="settings__fieldset">
+            <legend class="settings__legend">Editors to open</legend>
+            <p class="settings__hint">
+              Applies to the side-by-side layout. Leave all three off to keep whatever is open.
+            </p>
+            <div class="nys-display-flex nys-flex-gap-300">
+              <nys-checkbox id="slide-editor-html" label="HTML" size="sm"></nys-checkbox>
+              <nys-checkbox id="slide-editor-css" label="CSS" size="sm"></nys-checkbox>
+              <nys-checkbox id="slide-editor-js" label="JS" size="sm"></nys-checkbox>
+            </div>
+          </fieldset>
+          <nys-select
+            id="slide-version-select"
+            label="Design system version"
+            width="md"
+            description="Pick latest to follow the newest release."
+          ></nys-select>
+        </div>
+        <div slot="actions">
+          <nys-button id="slide-modal-done" label="Done"></nys-button>
+        </div>
+      </nys-modal>
+
+      <nys-modal id="confirm-modal" heading="Are you sure?" width="sm">
+        <p id="confirm-message"></p>
+        <div slot="actions">
+          <nys-button id="confirm-cancel" variant="outline" label="Cancel"></nys-button>
+          <nys-button id="confirm-ok" label="Delete"></nys-button>
+        </div>
+      </nys-modal>
+
+      <nys-modal id="leave-modal" heading="Leave the scratch pad?" width="sm">
+        <p>Your edits aren't saved anywhere yet.</p>
+        <div slot="actions">
+          <nys-button id="leave-stay" variant="outline" label="Stay"></nys-button>
+          <nys-button id="leave-discard" variant="outline" label="Leave"></nys-button>
+          <nys-button id="leave-save" label="Save as deck"></nys-button>
+        </div>
+      </nys-modal>
+
+      <nys-modal id="share-modal" heading="Share" width="md">
+        <p class="share__lede">
+          A deck link points at a deck in this browser. A standalone link carries the code
+          itself, so it opens anywhere.
+        </p>
+        <div class="nys-display-flex nys-flex-column nys-flex-gap-200">
+          <nys-button
+            id="share-deck-link"
+            variant="outline"
+            label="Copy link to this slide (works in this browser)"
+            prefixIcon="link"
+          ></nys-button>
+          <nys-button
+            id="share-code-link"
+            label="Copy standalone link"
+            prefixIcon="link"
+          ></nys-button>
+        </div>
+        <div slot="actions">
+          <nys-button id="share-modal-done" label="Done"></nys-button>
+        </div>
+      </nys-modal>
+
+      <nys-modal id="settings-modal" heading="Settings" width="md">
+        <div class="settings">
+          <nys-toggle
+            id="theme-toggle"
+            class="settings__field"
+            size="sm"
+            label="Dark editor"
+            description="Changes the code editors only. The preview always shows the design system as it is."
+            name="editor-theme"
+            value="dark"
+          ></nys-toggle>
+
+          <nys-toggle
+            id="columns-toggle"
+            class="settings__field"
+            size="sm"
+            label="Side by side editors"
+            description="Shows HTML, CSS, and JavaScript in three columns. Turn it off for one tabbed editor."
+            name="editor-layout"
+            value="columns"
+          ></nys-toggle>
+
+          <nys-select
+            id="font-size-select"
+            class="settings__field"
+            width="md"
+            label="Editor font size"
+          >
+            <option value="small" label="Small (13px)"></option>
+            <option value="medium" label="Medium (15px)"></option>
+            <option value="large" label="Large (18px)"></option>
+          </nys-select>
+
+          <nys-select
+            id="update-mode-select"
+            class="settings__field"
+            width="lg"
+            label="Update preview"
+            description="How soon an edit reaches the preview. Cmd or Ctrl plus Enter updates it at once."
+          >
+            <option value="typing" label="While typing"></option>
+            <option value="pause" label="After a longer pause"></option>
+            <option value="manual" label="Manually"></option>
+          </nys-select>
+
+          <nys-toggle
+            id="prerelease-toggle"
+            class="settings__field"
+            size="sm"
+            label="Show prerelease versions"
+            name="prereleases"
+            value="on"
+          ></nys-toggle>
+
+          <nys-button
+            id="reset-settings-button"
+            class="settings__reset"
+            size="sm"
+            variant="outline"
+            label="Reset settings"
+            prefixIcon="refresh"
+          ></nys-button>
+        </div>
+        <div slot="actions">
+          <nys-button id="settings-done-button" label="Done"></nys-button>
+        </div>
+      </nys-modal>
+
+      <div class="deck-missing" id="deck-missing" hidden>
+        <nys-alert
+          type="warning"
+          heading="Deck not found"
+          text="That deck is not in this browser. Decks are stored per browser, so a deck link only opens where it was made."
+        ></nys-alert>
+        <nys-button id="deck-missing-home" label="Go home" prefixIcon="arrow_back"></nys-button>
+      </div>
+
+      <!-- Always in the page, never hidden, so the live region exists before
+           a toast lands in it and the change is what gets announced. -->
+      <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <playground-project id="project"></playground-project>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
