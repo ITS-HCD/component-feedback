@@ -36,7 +36,7 @@ const deck = {
       description:
         'nys-feedback animates in on a license renewal confirmation page. A session cookie allows one answer until you clear it.',
       notes:
-        'The feedback sits where the confirmation page had a divider. It waits two seconds, then slides in. ' +
+        'The feedback sits where the confirmation page had a divider. For two seconds the page reads as if it weren\'t there, then it opens and pushes What\'s next down. ' +
         'Choose Good or Needs improvement: the panel animates to the thank-you message, and the log shows the event, then the cookie. ' +
         'Reload the preview: a finished form shows right away, with no entrance. ' +
         'Clear cookie brings the buttons back in place, and Replay entrance shows the entrance again.',

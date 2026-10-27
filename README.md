@@ -16,15 +16,17 @@ This is a prototype, not a released NYSDS component.
   left and two filled buttons on the right, one row.
 - **Narrow containers** stack everything in one centered column, with the
   buttons below the text.
-- Two seconds after it first renders, the component slides up and fades in to
-  catch the eye. Its space is held while it waits, so the page doesn't shift. A component that's already `submitted`
-  when it first renders skips the entrance, because a finished form shouldn't
-  draw attention, and resetting it later doesn't replay the entrance either.
+- For two seconds after it first renders, the component takes no space, so
+  the page reads as if it weren't there. Then it opens downward, pushing the
+  content below it down, while its contents fade in and drift down into place.
+  A component that's already `submitted` when it first renders skips the
+  entrance, because a finished form shouldn't draw attention, and resetting it
+  later doesn't replay the entrance either.
 - After someone answers, the buttons fade out, the panel shrinks to fit, and a
   thank-you message rises into place while its check icon pops. Focus moves
   to that message.
 - Every animation is CSS only. With `prefers-reduced-motion`, the component
-  fades instead of moving, and the panel changes height without animating.
+  opens at once and fades in, and the panel changes height without animating.
 
 The layout follows the component's own width through a container query, so it
 adapts inside a sidebar the same way it does on a phone.

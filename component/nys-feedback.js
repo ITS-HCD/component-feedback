@@ -8,11 +8,13 @@ import {LitElement, css, html, nothing} from 'lit';
  * stack them in one centered column. The layout follows the component's own
  * width through a container query, not the viewport.
  *
- * The component waits two seconds after it first renders, then slides in to
- * catch the eye. Its space is held while it waits, so the page doesn't shift. Set `--nys-feedback-entrance-delay` to change the wait.
- * A component that's already `submitted` when it first renders skips the
- * entrance, because a finished form shouldn't draw attention. Call
- * `animateIn()` to play the entrance again.
+ * The component takes no space for two seconds after it first renders, so
+ * the page reads as if it weren't there. Then it opens downward, pushing the
+ * content below it down, and its contents fade in as it grows. Set
+ * `--nys-feedback-entrance-delay` to change the wait. A component that's
+ * already `submitted` when it first renders skips the entrance, because a
+ * finished form shouldn't draw attention. Call `animateIn()` to play the
+ * entrance again.
  *
  * After someone answers, the buttons fade out, the panel shrinks to fit, and
  * a thank-you message rises into place. Then the component fires
@@ -65,8 +67,14 @@ export class NysFeedback extends LitElement {
 
     /* Frame and panel ---------------------------------------------------- */
 
+    /*
+     * The frame is a one-row grid, like the steps below, so the entrance can
+     * open it from no height at all. The frame's own border and shadow grow
+     * with it, and the clip inside hides the content that hasn't fit yet.
+     */
     .frame {
-      padding: var(--nys-space-100);
+      display: grid;
+      grid-template-rows: 1fr;
       background-color: var(--nys-color-surface);
       /* No applied NYSDS token is this light, so use the neutral primitive. */
       border: var(--nys-border-width-sm) solid var(--nys-color-neutral-100);
@@ -74,13 +82,25 @@ export class NysFeedback extends LitElement {
       box-shadow: var(--nys-shadow-raised);
     }
 
+    .frame__clip {
+      min-height: 0;
+      overflow: hidden;
+    }
+
     .frame--enter {
-      animation: nys-feedback-enter 500ms var(--_ease-out) var(--nys-feedback-entrance-delay, 2s)
+      animation: nys-feedback-open 500ms var(--_ease-out) var(--nys-feedback-entrance-delay, 2s)
         both;
+    }
+
+    .frame--enter .frame__clip {
+      animation: nys-feedback-reveal 400ms ease-out
+        calc(var(--nys-feedback-entrance-delay, 2s) + 150ms) both;
     }
 
     .panel {
       overflow: hidden;
+      /* A margin, not padding on the frame, so the frame can close to 0. */
+      margin: var(--nys-space-100);
       padding: var(--nys-space-300);
       background-color: var(--nys-color-theme-faint);
       border-radius: var(--nys-radius-lg);
@@ -248,27 +268,50 @@ export class NysFeedback extends LitElement {
 
     /* Keyframes ---------------------------------------------------------- */
 
-    /* Hidden, not just transparent, while it waits, so nobody can tab into
-       buttons they can't see yet. */
-    @keyframes nys-feedback-enter {
-      from {
+    /* Closed and hidden while it waits, so it takes no space and nobody can
+       tab into buttons they can't see yet. */
+    @keyframes nys-feedback-open {
+      0% {
         visibility: hidden;
         opacity: 0;
-        transform: translateY(var(--nys-space-400)) scale(0.97);
+        grid-template-rows: 0fr;
+        border-block-width: 0;
+      }
+      30% {
+        opacity: 1;
       }
     }
 
-    @keyframes nys-feedback-fade-in {
+    /* The content drifts down as it fades in, the same way the page moves. */
+    @keyframes nys-feedback-reveal {
       from {
+        opacity: 0;
+        transform: translateY(calc(-1 * var(--nys-space-150)));
+      }
+    }
+
+    /* Opens at once and fades in, without growing or drifting. */
+    @keyframes nys-feedback-fade-open {
+      0% {
         visibility: hidden;
         opacity: 0;
+        grid-template-rows: 0fr;
+        border-block-width: 0;
+      }
+      1% {
+        grid-template-rows: 1fr;
+        border-block-width: var(--nys-border-width-sm);
       }
     }
 
     /* Fades stay, movement goes. */
     @media (prefers-reduced-motion: reduce) {
       .frame--enter {
-        animation: nys-feedback-fade-in 400ms ease var(--nys-feedback-entrance-delay, 2s) both;
+        animation: nys-feedback-fade-open 400ms ease var(--nys-feedback-entrance-delay, 2s) both;
+      }
+
+      .frame--enter .frame__clip {
+        animation: none;
       }
 
       .collapse,
@@ -353,40 +396,42 @@ export class NysFeedback extends LitElement {
     // and the accessibility tree.
     return html`
       <div class="frame ${this._entering ? 'frame--enter' : ''}">
-        <div class="panel">
-          <div class="collapse collapse--prompt">
-            <div
-              class="step step--prompt"
-              role="group"
-              aria-labelledby=${headingId}
-              aria-describedby=${this.text ? textId : nothing}
-            >
-              <div class="prompt">
-                <p class="heading" id=${headingId}>${this.heading}</p>
-                ${this.text ? html`<p class="text" id=${textId}>${this.text}</p>` : ''}
-              </div>
-              <div class="actions">
-                <nys-button
-                  variant="filled"
-                  prefixIcon="thumb_up"
-                  label=${this.positiveLabel}
-                  @nys-click=${() => this._answer('good', this.positiveLabel)}
-                ></nys-button>
-                <nys-button
-                  variant="filled"
-                  prefixIcon="thumb_down"
-                  label=${this.negativeLabel}
-                  @nys-click=${() => this._answer('needs-improvement', this.negativeLabel)}
-                ></nys-button>
+        <div class="frame__clip">
+          <div class="panel">
+            <div class="collapse collapse--prompt">
+              <div
+                class="step step--prompt"
+                role="group"
+                aria-labelledby=${headingId}
+                aria-describedby=${this.text ? textId : nothing}
+              >
+                <div class="prompt">
+                  <p class="heading" id=${headingId}>${this.heading}</p>
+                  ${this.text ? html`<p class="text" id=${textId}>${this.text}</p>` : ''}
+                </div>
+                <div class="actions">
+                  <nys-button
+                    variant="filled"
+                    prefixIcon="thumb_up"
+                    label=${this.positiveLabel}
+                    @nys-click=${() => this._answer('good', this.positiveLabel)}
+                  ></nys-button>
+                  <nys-button
+                    variant="filled"
+                    prefixIcon="thumb_down"
+                    label=${this.negativeLabel}
+                    @nys-click=${() => this._answer('needs-improvement', this.negativeLabel)}
+                  ></nys-button>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="collapse collapse--confirmation">
-            <div class="step step--confirmation">
-              <p class="confirmation" tabindex="-1">
-                <nys-icon name="check_circle" size="24"></nys-icon>
-                ${this.confirmationText}
-              </p>
+            <div class="collapse collapse--confirmation">
+              <div class="step step--confirmation">
+                <p class="confirmation" tabindex="-1">
+                  <nys-icon name="check_circle" size="24"></nys-icon>
+                  ${this.confirmationText}
+                </p>
+              </div>
             </div>
           </div>
         </div>
