@@ -8,9 +8,8 @@ import {LitElement, css, html, nothing} from 'lit';
  * stack them in one centered column. The layout follows the component's own
  * width through a container query, not the viewport.
  *
- * The component waits two seconds after it first renders, then slides in with
- * one soft pulse to catch the eye. Its space is held while it waits, so the
- * page doesn't shift. Set `--nys-feedback-entrance-delay` to change the wait.
+ * The component waits two seconds after it first renders, then slides in to
+ * catch the eye. Its space is held while it waits, so the page doesn't shift. Set `--nys-feedback-entrance-delay` to change the wait.
  * A component that's already `submitted` when it first renders skips the
  * entrance, because a finished form shouldn't draw attention. Call
  * `animateIn()` to play the entrance again.
@@ -76,10 +75,8 @@ export class NysFeedback extends LitElement {
     }
 
     .frame--enter {
-      animation:
-        nys-feedback-enter 500ms var(--_ease-out) var(--nys-feedback-entrance-delay, 2s) both,
-        nys-feedback-pulse 1200ms ease-out
-          calc(var(--nys-feedback-entrance-delay, 2s) + 400ms);
+      animation: nys-feedback-enter 500ms var(--_ease-out) var(--nys-feedback-entrance-delay, 2s)
+        both;
     }
 
     .panel {
@@ -258,19 +255,6 @@ export class NysFeedback extends LitElement {
         visibility: hidden;
         opacity: 0;
         transform: translateY(var(--nys-space-400)) scale(0.97);
-      }
-    }
-
-    @keyframes nys-feedback-pulse {
-      from {
-        box-shadow:
-          var(--nys-shadow-raised),
-          0 0 0 0 var(--nys-color-theme-mid);
-      }
-      to {
-        box-shadow:
-          var(--nys-shadow-raised),
-          0 0 0 var(--nys-space-200) transparent;
       }
     }
 

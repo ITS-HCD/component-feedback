@@ -16,9 +16,8 @@ This is a prototype, not a released NYSDS component.
   left and two filled buttons on the right, one row.
 - **Narrow containers** stack everything in one centered column, with the
   buttons below the text.
-- Two seconds after it first renders, the component slides up and fades in,
-  then gives off one soft pulse to catch the eye. Its space is held while it
-  waits, so the page doesn't shift. A component that's already `submitted`
+- Two seconds after it first renders, the component slides up and fades in to
+  catch the eye. Its space is held while it waits, so the page doesn't shift. A component that's already `submitted`
   when it first renders skips the entrance, because a finished form shouldn't
   draw attention, and resetting it later doesn't replay the entrance either.
 - After someone answers, the buttons fade out, the panel shrinks to fit, and a
