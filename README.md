@@ -25,8 +25,9 @@ This is a prototype, not a released NYSDS component.
 - After someone answers, the buttons fade out, the panel shrinks to fit, and a
   thank-you message rises into place while its check icon pops. Focus moves
   to that message.
-- Every animation is CSS only. With `prefers-reduced-motion`, the component
-  opens at once and fades in, and the panel changes height without animating.
+- Every animation is CSS only. With `prefers-reduced-motion`, nothing moves:
+  the component opens at once and fades in, the panel changes height without
+  animating, and the outgoing step disappears while the incoming one fades in.
 
 The layout follows the component's own width through a container query, so it
 adapts inside a sidebar the same way it does on a phone.

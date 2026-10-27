@@ -15,7 +15,8 @@ function addLogEntry(message) {
   time.className = 'log__time';
   time.textContent = `${new Date().toLocaleTimeString()} `;
   item.append(time, message);
-  log.append(item);
+  // Newest first, so the latest event is always in view.
+  log.prepend(item);
 }
 
 function readCookie() {

@@ -101,3 +101,7 @@
   flex-wrap: wrap;
   gap: var(--nys-space-100);
 }
+
+.log__clear {
+  align-self: flex-start;
+}

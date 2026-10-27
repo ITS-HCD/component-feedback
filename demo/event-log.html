@@ -46,10 +46,6 @@
 
     <aside class="nys-grid-col-12 nys-desktop:nys-grid-col-4 log" aria-labelledby="log-title">
       <h2 class="log__title" id="log-title">Event log</h2>
-      <p class="log__cookie">
-        Cookie: <code id="cookie-status">none</code>
-      </p>
-      <ol class="log__list" id="log" aria-live="polite"></ol>
       <div class="log__actions">
         <nys-button
           id="clear-cookie"
@@ -65,8 +61,18 @@
           prefixIcon="refresh"
           label="Replay entrance"
         ></nys-button>
-        <nys-button id="clear-log" variant="ghost" size="sm" label="Clear log"></nys-button>
       </div>
+      <p class="log__cookie">
+        Cookie: <code id="cookie-status">none</code>
+      </p>
+      <ol class="log__list" id="log" aria-live="polite"></ol>
+      <nys-button
+        class="log__clear"
+        id="clear-log"
+        variant="ghost"
+        size="sm"
+        label="Clear log"
+      ></nys-button>
     </aside>
   </div>
 </div>

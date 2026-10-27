@@ -323,6 +323,25 @@ export class NysFeedback extends LitElement {
       .confirmation nys-icon {
         transform: none;
       }
+
+      /* The panel snaps to its new height, so the outgoing step leaves at
+         once instead of fading over the incoming one. */
+      .step--prompt {
+        transition:
+          opacity 300ms ease,
+          visibility 0s;
+      }
+
+      :host([submitted]) .step--prompt,
+      .step--confirmation {
+        transition: none;
+      }
+
+      :host([submitted]) .step--confirmation {
+        transition:
+          opacity 300ms ease,
+          visibility 0s;
+      }
     }
   `;
 
