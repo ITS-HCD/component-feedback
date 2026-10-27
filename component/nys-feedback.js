@@ -8,9 +8,12 @@ import {LitElement, css, html, nothing} from 'lit';
  * stack them in one centered column. The layout follows the component's own
  * width through a container query, not the viewport.
  *
- * The component waits two seconds after it renders, then slides in with one
- * soft pulse to catch the eye. Its space is held while it waits, so the page
- * doesn't shift. Set `--nys-feedback-entrance-delay` to change the wait.
+ * The component waits two seconds after it first renders, then slides in with
+ * one soft pulse to catch the eye. Its space is held while it waits, so the
+ * page doesn't shift. Set `--nys-feedback-entrance-delay` to change the wait.
+ * A component that's already `submitted` when it first renders skips the
+ * entrance, because a finished form shouldn't draw attention. Call
+ * `animateIn()` to play the entrance again.
  *
  * After someone answers, the buttons fade out, the panel shrinks to fit, and
  * a thank-you message rises into place. Then the component fires
@@ -41,6 +44,8 @@ export class NysFeedback extends LitElement {
     submitted: {type: Boolean, reflect: true},
     /** The answer: `good`, `needs-improvement`, or empty. */
     value: {type: String, reflect: true},
+    /** Whether the frame carries the entrance animation. */
+    _entering: {state: true},
   };
 
   static styles = css`
@@ -68,6 +73,9 @@ export class NysFeedback extends LitElement {
       border: var(--nys-border-width-sm) solid var(--nys-color-neutral-100);
       border-radius: var(--nys-radius-xl);
       box-shadow: var(--nys-shadow-raised);
+    }
+
+    .frame--enter {
       animation:
         nys-feedback-enter 500ms var(--_ease-out) var(--nys-feedback-entrance-delay, 2s) both,
         nys-feedback-pulse 1200ms ease-out
@@ -275,7 +283,7 @@ export class NysFeedback extends LitElement {
 
     /* Fades stay, movement goes. */
     @media (prefers-reduced-motion: reduce) {
-      .frame {
+      .frame--enter {
         animation: nys-feedback-fade-in 400ms ease var(--nys-feedback-entrance-delay, 2s) both;
       }
 
@@ -302,13 +310,36 @@ export class NysFeedback extends LitElement {
     this.confirmationText = 'Thanks for your feedback.';
     this.submitted = false;
     this.value = '';
+    this._entering = false;
     this._idPrefix = `nys-feedback-${++NysFeedback.#count}`;
   }
 
-  /** Clears the answer and shows the buttons again. */
+  willUpdate() {
+    // Decide once, on the first render. Answering or resetting later leaves
+    // the class alone, so neither one replays the entrance.
+    if (!this.hasUpdated) {
+      this._entering = !this.submitted;
+    }
+  }
+
+  /** Clears the answer and shows the buttons again, without an entrance. */
   reset() {
     this.submitted = false;
     this.value = '';
+  }
+
+  /** Plays the entrance animation again, delay included. */
+  async animateIn() {
+    this._entering = false;
+    await this.updateComplete;
+    // Reading a style makes the browser drop the old animations, so adding
+    // the class back starts both of them fresh.
+    const frame = this.renderRoot.querySelector('.frame');
+    if (frame) {
+      getComputedStyle(frame).animationName;
+    }
+    this._entering = true;
+    await this.updateComplete;
   }
 
   async _answer(value, label) {
@@ -337,7 +368,7 @@ export class NysFeedback extends LitElement {
     // one has `visibility: hidden`, which also keeps it out of the tab order
     // and the accessibility tree.
     return html`
-      <div class="frame">
+      <div class="frame ${this._entering ? 'frame--enter' : ''}">
         <div class="panel">
           <div class="collapse collapse--prompt">
             <div

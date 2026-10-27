@@ -47,16 +47,21 @@ export const DEFAULTS = {
   drawerSize: 32,
 };
 
-/** Every key the playground writes, so "Reset settings" can clear them all. */
+/**
+ * Every key the playground writes, so "Reset settings" can clear them all.
+ *
+ * This copy shares the its-hcd.github.io origin, and so localStorage, with the
+ * main NYSDS Playground. Its own prefix keeps the two sets of settings apart.
+ */
 export const STORAGE_KEYS = {
-  theme: 'nysds-playground:editor-theme',
-  layout: 'nysds-playground:editor-layout',
-  fontSize: 'nysds-playground:font-size',
-  updateMode: 'nysds-playground:update-mode',
-  prereleases: 'nysds-playground:prereleases',
-  collapsedPanes: 'nysds-playground:collapsed-panes',
-  drawerSize: 'nysds-playground:present-editor-size',
-  codeCollapsed: 'nysds-playground:present-code-collapsed',
+  theme: 'nys-feedback-playground:editor-theme',
+  layout: 'nys-feedback-playground:editor-layout',
+  fontSize: 'nys-feedback-playground:font-size',
+  updateMode: 'nys-feedback-playground:update-mode',
+  prereleases: 'nys-feedback-playground:prereleases',
+  collapsedPanes: 'nys-feedback-playground:collapsed-panes',
+  drawerSize: 'nys-feedback-playground:present-editor-size',
+  codeCollapsed: 'nys-feedback-playground:present-code-collapsed',
 } as const;
 
 /* URL parsing ----------------------------------------------------------- */

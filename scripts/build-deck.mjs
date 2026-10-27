@@ -32,13 +32,14 @@ const deck = {
     {
       id: 'event-log',
       group: 'nys-feedback',
-      title: 'Event log and session cookie',
+      title: 'Confirmation page and event log',
       description:
-        'Choose an answer to fire nys-feedback. A session cookie keeps you to one answer until you clear it.',
+        'nys-feedback animates in on a license renewal confirmation page. A session cookie allows one answer until you clear it.',
       notes:
-        'The component waits two seconds, then slides in. Choose Good or Needs improvement: ' +
-        'the panel animates to the thank-you message, and the log shows the event, then the cookie. ' +
-        'Reload the preview to show the cookie holding the answer, then select Clear cookie to reset.',
+        'The feedback sits where the confirmation page had a divider. It waits two seconds, then slides in. ' +
+        'Choose Good or Needs improvement: the panel animates to the thank-you message, and the log shows the event, then the cookie. ' +
+        'Reload the preview: a finished form shows right away, with no entrance. ' +
+        'Clear cookie brings the buttons back in place, and Replay entrance shows the entrance again.',
       html: await read('demo/event-log.html'),
       css: await read('demo/event-log.css'),
       js: withComponent(await read('demo/event-log.js')),

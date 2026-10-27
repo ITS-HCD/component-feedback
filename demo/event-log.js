@@ -65,6 +65,11 @@ document.querySelector('#clear-cookie').addEventListener('nys-click', () => {
   showCookie();
 });
 
+document.querySelector('#replay-entrance').addEventListener('nys-click', () => {
+  feedback.animateIn();
+  addLogEntry('entrance replayed: the component animates in after 2 seconds');
+});
+
 document.querySelector('#clear-log').addEventListener('nys-click', () => {
   log.replaceChildren();
 });

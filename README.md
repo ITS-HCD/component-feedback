@@ -16,9 +16,11 @@ This is a prototype, not a released NYSDS component.
   left and two filled buttons on the right, one row.
 - **Narrow containers** stack everything in one centered column, with the
   buttons below the text.
-- Two seconds after it renders, the component slides up and fades in, then
-  gives off one soft pulse to catch the eye. Its space is held while it waits,
-  so the page doesn't shift.
+- Two seconds after it first renders, the component slides up and fades in,
+  then gives off one soft pulse to catch the eye. Its space is held while it
+  waits, so the page doesn't shift. A component that's already `submitted`
+  when it first renders skips the entrance, because a finished form shouldn't
+  draw attention, and resetting it later doesn't replay the entrance either.
 - After someone answers, the buttons fade out, the panel shrinks to fit, and a
   thank-you message rises into place while its check icon pops. Focus moves
   to that message.
@@ -81,18 +83,22 @@ easing.
 
 | Method | Description |
 | --- | --- |
-| `reset()` | Clears the answer and shows the buttons again. |
+| `reset()` | Clears the answer and shows the buttons again, without an entrance. |
+| `animateIn()` | Plays the entrance animation again, delay included. |
 
 ## The demo
 
 The site opens on the **nys-feedback** deck, which has two slides.
 
-- **Event log and session cookie**: an event log sits beside the component.
+- **Confirmation page and event log**: a license renewal confirmation page,
+  with nys-feedback in the spot where the page had a divider, between the
+  license card and "What's next?" An event log sits beside the page.
   Choosing **Good** logs `event fired: good`, and choosing **Needs
   improvement** logs `event fired: needs improvement`. The demo then sets a
   session cookie named `nys-feedback`, so a reload shows the thank-you message
-  instead of the buttons until the browser session ends. Select **Clear
-  cookie** to delete it and answer again.
+  right away, with no entrance, until the browser session ends. Select **Clear
+  cookie** to delete it and answer again, or **Replay entrance** to watch the
+  entrance animation again.
 - **Layouts**: the wide, narrow, and answered states side by side.
 
 The playground preview runs in a cross-site iframe, so the cookie is set with
@@ -124,6 +130,12 @@ slide's own script, so the playground shows and runs the real source.
 - Decks save under their own key prefix, so they don't mix with the main
   playground's decks. Both sites share the `its-hcd.github.io` origin, and so
   the same IndexedDB store.
+- The code drawer starts closed, so the first thing a visitor sees is the
+  whole demo page. A **Code** button in the slide bar, or the `c` key, opens
+  it, and the choice is remembered. The setting is `codeCollapsedByDefault` in
+  `src/playground.config.ts`.
+- Settings save under their own localStorage prefix, for the same reason as
+  the decks.
 - The preview scrolls past the code drawer. The drawer floats over the bottom
   of the preview, so upstream, the end of a long slide sits behind it with
   nothing to scroll. The host now tells the preview how much the drawer covers,

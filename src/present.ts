@@ -14,6 +14,7 @@ import {PANE_IDS} from './editors';
 import type {PresentationAction} from './keys';
 import {hintText, isTypingContext, routeKey} from './keys';
 import {applyEditorTheme, initialTheme, otherTheme, themeUrl, writeTheme} from './theme';
+import {PLAYGROUND_CONFIG} from './playground.config';
 import {STORAGE_KEYS, readKey, writeKey} from './settings';
 import {presentUrl} from './state';
 
@@ -48,6 +49,7 @@ export class Presentation {
   private readonly notes: HTMLElement;
   private readonly notesBody: HTMLElement;
   private readonly notesButton: HTMLElement;
+  private readonly codeButton: HTMLElement & {ariaExpanded: string | null};
   private readonly prevButton: HTMLElement & {disabled?: boolean};
   private readonly nextButton: HTMLElement & {disabled?: boolean};
   private readonly panes: EditorPanes;
@@ -71,6 +73,7 @@ export class Presentation {
     this.notes = required(root, '#notes');
     this.notesBody = required(root, '#notes-body');
     this.notesButton = required(root, '#notes-button');
+    this.codeButton = required(root, '#code-button');
     this.prevButton = required(root, '#prev-button');
     this.nextButton = required(root, '#next-button');
   }
@@ -88,6 +91,7 @@ export class Presentation {
       this.takeFocus();
     });
     bindClick('#notes-button', () => this.toggleNotes());
+    bindClick('#code-button', () => this.toggleCode());
     bindClick('#notes-close', () => this.closeNotes());
     window.addEventListener('keydown', (event) => this.onKeyDown(event), true);
     this.refresh();
@@ -288,6 +292,7 @@ export class Presentation {
 
   private applyCollapsed(): void {
     this.app.classList.toggle('app--code-collapsed', this.collapsed);
+    this.codeButton.ariaExpanded = this.collapsed ? 'false' : 'true';
   }
 
   private toggleNotes(): void {
@@ -380,7 +385,8 @@ function tagNamesFor(event: KeyboardEvent): string[] {
 }
 
 function readCollapsed(): boolean {
-  return readKey(STORAGE_KEYS.codeCollapsed) === '1';
+  const stored = readKey(STORAGE_KEYS.codeCollapsed);
+  return stored === null ? PLAYGROUND_CONFIG.codeCollapsedByDefault : stored === '1';
 }
 
 function writeCollapsed(collapsed: boolean): void {

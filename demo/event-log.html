@@ -1,17 +1,47 @@
 <div class="nys-grid-container demo">
   <div class="nys-grid-row nys-grid-gap-400">
-    <main class="nys-grid-col-12 nys-desktop:nys-grid-col-8 demo__page">
-      <h1>Renew your professional license</h1>
-      <nys-alert
-        type="success"
-        heading="Your license is renewed"
-        text="We emailed your receipt. Your new license is valid for two years."
-      ></nys-alert>
+    <main class="nys-grid-col-12 nys-desktop:nys-grid-col-8 confirmation">
+      <h1>Your renewal is submitted</h1>
+
+      <div class="confirmation__totals">
+        <p>Confirmation Number: <strong>CTR234212</strong></p>
+        <p>Total Charged: <strong>$40.00</strong></p>
+      </div>
+
+      <nys-card
+        elevated
+        preheading="Cosmetology License"
+        heading="Michael Diaz"
+        subheading="First Issued: 2019"
+      >
+        <div class="license">
+          <p>License Number: <strong>BO-19-12345</strong></p>
+          <p>Effective Date: <strong>10/23/23</strong></p>
+          <p>Expiration Date: <strong>10/23/23</strong></p>
+          <nys-badge label="Renewal Pending" prefixIcon="info"></nys-badge>
+        </div>
+      </nys-card>
+
       <nys-feedback
         id="feedback"
         heading="How did we do?"
         text="You just renewed your professional license."
       ></nys-feedback>
+
+      <section aria-labelledby="whats-next">
+        <h2 class="confirmation__next" id="whats-next">What's next?</h2>
+        <nys-processlist aria-labelledby="whats-next">
+          <nys-processlistitem>
+            <div slot="description">
+              You'll receive an email confirming this transaction at:
+              <a href="mailto:youremail@email.com">youremail@email.com</a>
+            </div>
+          </nys-processlistitem>
+          <nys-processlistitem
+            description="The Department of State Division of Licensing Services will review your submission. This review can take up to 14 days."
+          ></nys-processlistitem>
+        </nys-processlist>
+      </section>
     </main>
 
     <aside class="nys-grid-col-12 nys-desktop:nys-grid-col-4 log" aria-labelledby="log-title">
@@ -27,6 +57,13 @@
           size="sm"
           prefixIcon="delete"
           label="Clear cookie"
+        ></nys-button>
+        <nys-button
+          id="replay-entrance"
+          variant="outline"
+          size="sm"
+          prefixIcon="refresh"
+          label="Replay entrance"
         ></nys-button>
         <nys-button id="clear-log" variant="ghost" size="sm" label="Clear log"></nys-button>
       </div>

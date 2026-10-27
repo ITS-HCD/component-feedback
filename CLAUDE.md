@@ -17,6 +17,13 @@ copy of the NYSDS Playground (ITS-HCD/nysds-playground 0.2.0).
   so long slides scroll clear of it. The host answers the preview's
   `postMessage` request and resends on resize (`setupDrawerSpace` in
   `src/main.ts`, `DRAWER_SPACE_HEAD` in `src/wrapper.ts`).
+- The code drawer starts closed (`codeCollapsedByDefault` in
+  `src/playground.config.ts`), and the `#code-button` in the slide bar toggles
+  it through `Presentation.toggleCode` in `src/present.ts`. Settings keys use
+  the `nys-feedback-playground:` prefix so they don't collide with the main
+  playground on the same origin.
+- The entrance animation is decided once, on first render (`willUpdate` sets
+  `_entering`). Don't tie it to `submitted`, or a reset replays it.
 - Every nys-feedback animation is CSS only. Both steps stay in the DOM so CSS
   can animate between them; don't go back to swapping templates in `render`.
 

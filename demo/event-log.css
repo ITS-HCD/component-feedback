@@ -1,24 +1,66 @@
 .demo {
-  padding-block: var(--nys-space-400);
+  padding-block: var(--nys-space-300);
 }
 
-.demo__page {
+/* Confirmation page ------------------------------------------------------ */
+
+.confirmation {
   display: flex;
   flex-direction: column;
-  gap: var(--nys-space-300);
+  gap: var(--nys-space-400);
 }
 
-.demo__page h1 {
+.confirmation h1 {
+  margin: 0;
+  font-size: var(--nys-font-size-h2);
+}
+
+.confirmation p {
   margin: 0;
 }
+
+.confirmation__totals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nys-space-200);
+  font-size: var(--nys-font-size-body-lg);
+}
+
+.confirmation__next {
+  margin: 0 0 var(--nys-space-300);
+  font-size: var(--nys-font-size-h4);
+}
+
+.license {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--nys-space-100);
+  font-size: var(--nys-font-size-body-sm);
+}
+
+.license nys-badge {
+  margin-block-start: var(--nys-space-100);
+}
+
+/* Event log -------------------------------------------------------------- */
 
 .log {
   display: flex;
   flex-direction: column;
+  align-self: flex-start;
   gap: var(--nys-space-200);
   padding: var(--nys-space-300);
   background-color: var(--nys-color-base-weak);
   border-radius: var(--nys-radius-lg);
+}
+
+/* Keep the log in view beside a long page. */
+@media (min-width: 64em) {
+  .log {
+    position: sticky;
+    top: var(--nys-space-300);
+  }
 }
 
 .log__title {

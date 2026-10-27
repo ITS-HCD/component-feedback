@@ -44,6 +44,11 @@ export interface PlaygroundAppConfig {
   showPrereleasesByDefault: boolean;
   /** The deck a bare URL opens. Use an empty string to open the home page. */
   defaultDeck: string;
+  /**
+   * Whether the code drawer starts closed for someone who hasn't opened or
+   * closed it yet. The Code button in the slide bar, or the `c` key, opens it.
+   */
+  codeCollapsedByDefault: boolean;
 }
 
 export const PLAYGROUND_CONFIG: PlaygroundAppConfig = {
@@ -59,6 +64,7 @@ export const PLAYGROUND_CONFIG: PlaygroundAppConfig = {
   extraHeadHtml: '<link rel="stylesheet" href="./fonts/nysds-fonts.css">',
   showPrereleasesByDefault: false,
   defaultDeck: 'nys-feedback',
+  codeCollapsedByDefault: true,
 };
 
 /** Returns the CDN URL for a package file at a given version. */
