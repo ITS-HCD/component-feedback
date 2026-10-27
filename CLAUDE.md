@@ -13,6 +13,12 @@ copy of the NYSDS Playground (ITS-HCD/nysds-playground 0.2.0).
 - Unedited starter decks move to new bundled code on load
   (`outdatedStarters` in `src/deck-model.ts`), so a redeploy reaches browsers
   that already seeded.
+- The preview gets bottom padding equal to the part the code drawer covers,
+  so long slides scroll clear of it. The host answers the preview's
+  `postMessage` request and resends on resize (`setupDrawerSpace` in
+  `src/main.ts`, `DRAWER_SPACE_HEAD` in `src/wrapper.ts`).
+- Every nys-feedback animation is CSS only. Both steps stay in the DOM so CSS
+  can animate between them; don't go back to swapping templates in `render`.
 
 The rest of this file describes the playground app.
 

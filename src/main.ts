@@ -41,6 +41,7 @@ import {EditorPanes} from './editor-panes';
 import type {EditorLayout} from './editors';
 import {collapsedForPreset, layoutUrl} from './editors';
 import {isBuildShortcut} from './keys';
+import {DRAWER_SPACE_REPLY, DRAWER_SPACE_REQUEST} from './wrapper';
 import type {FontSize, UpdateMode} from './settings';
 import {
   DEFAULTS,
@@ -1231,6 +1232,52 @@ function replaceQuery(name: string, value: string): void {
  * The drawer sits over the bottom of the stage, so a larger pointer Y means a
  * shorter drawer.
  */
+/**
+ * Tells the preview how much of it the code drawer covers.
+ *
+ * The preview asks on every load (see `DRAWER_SPACE_HEAD` in `src/wrapper.ts`)
+ * and uses the answer as scroll room. A ResizeObserver sends a new value when
+ * the drawer is dragged or collapsed, or the window changes size, so the
+ * preview never has to rebuild for it.
+ */
+function setupDrawerSpace(): void {
+  const editors = required('#editors');
+  const divider = required('#divider');
+  const preview = required('.split__pane--preview');
+  let target: Window | null = null;
+
+  const covered = (): number => {
+    const drawer = editors.getBoundingClientRect();
+    if (drawer.height === 0) {
+      return 0;
+    }
+    const line = divider.getBoundingClientRect();
+    const top = line.height > 0 ? Math.min(line.top, drawer.top) : drawer.top;
+    return Math.max(0, Math.round(preview.getBoundingClientRect().bottom - top));
+  };
+
+  const send = (): void => {
+    target?.postMessage({type: DRAWER_SPACE_REPLY, px: covered()}, '*');
+  };
+
+  window.addEventListener('message', (event) => {
+    const data: unknown = event.data;
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      (data as {type?: unknown}).type === DRAWER_SPACE_REQUEST &&
+      event.source
+    ) {
+      target = event.source as Window;
+      send();
+    }
+  });
+
+  const observer = new ResizeObserver(send);
+  observer.observe(editors);
+  observer.observe(preview);
+}
+
 function setupSplitter(): void {
   const stage = required('#split');
   const divider = required('#divider');
@@ -1476,6 +1523,7 @@ async function main(): Promise<void> {
   }
 
   setupSplitter();
+  setupDrawerSpace();
 
   let deck: StoredDeck;
   if (route.kind === 'deck') {

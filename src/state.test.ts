@@ -24,7 +24,12 @@ import {
 import {isBuildShortcut} from './keys.ts';
 import {chooseVersion} from './version-catalog.ts';
 import {otherTheme, readThemeParam, themeUrl} from './theme.ts';
-import {resolveHeadUrls, wrapUserHtml} from './wrapper.ts';
+import {
+  DRAWER_SPACE_REPLY,
+  DRAWER_SPACE_REQUEST,
+  resolveHeadUrls,
+  wrapUserHtml,
+} from './wrapper.ts';
 
 /** Collects validation messages instead of writing them to the console. */
 function collector(): {messages: string[]; report: (message: string) => void} {
@@ -47,6 +52,13 @@ test('wrapUserHtml puts the snippet in a whole document', () => {
   assert.ok(wrapped.includes(WRAPPER_OPTIONS.componentsSrc));
   assert.ok(wrapped.includes('./styles.css'));
   assert.ok(wrapped.includes('./script.js'));
+});
+
+test('wrapUserHtml leaves scroll room for the code drawer', () => {
+  const wrapped = wrapUserHtml('<p>Hi</p>', WRAPPER_OPTIONS);
+  assert.ok(wrapped.includes('padding-block-end:var(--pg-drawer-space,0px)'));
+  assert.ok(wrapped.includes(DRAWER_SPACE_REQUEST));
+  assert.ok(wrapped.includes(DRAWER_SPACE_REPLY));
 });
 
 test('wrapUserHtml leaves no editor pragmas behind', () => {

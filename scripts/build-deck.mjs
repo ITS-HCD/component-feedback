@@ -36,7 +36,8 @@ const deck = {
       description:
         'Choose an answer to fire nys-feedback. A session cookie keeps you to one answer until you clear it.',
       notes:
-        'Choose Good or Needs improvement. The log shows the event, then the cookie. ' +
+        'The component waits two seconds, then slides in. Choose Good or Needs improvement: ' +
+        'the panel animates to the thank-you message, and the log shows the event, then the cookie. ' +
         'Reload the preview to show the cookie holding the answer, then select Clear cookie to reset.',
       html: await read('demo/event-log.html'),
       css: await read('demo/event-log.css'),

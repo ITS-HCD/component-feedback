@@ -16,8 +16,14 @@ This is a prototype, not a released NYSDS component.
   left and two filled buttons on the right, one row.
 - **Narrow containers** stack everything in one centered column, with the
   buttons below the text.
-- After someone answers, the buttons give way to a thank-you message, and
-  focus moves to that message.
+- Two seconds after it renders, the component slides up and fades in, then
+  gives off one soft pulse to catch the eye. Its space is held while it waits,
+  so the page doesn't shift.
+- After someone answers, the buttons fade out, the panel shrinks to fit, and a
+  thank-you message rises into place while its check icon pops. Focus moves
+  to that message.
+- Every animation is CSS only. With `prefers-reduced-motion`, the component
+  fades instead of moving, and the panel changes height without animating.
 
 The layout follows the component's own width through a container query, so it
 adapts inside a sidebar the same way it does on a phone.
@@ -61,6 +67,15 @@ The page needs the NYSDS styles and components loaded, because
 | Event | Detail | Description |
 | --- | --- | --- |
 | `nys-feedback` | `{value, label}` | Fires once when someone answers. Bubbles and is composed. |
+
+### CSS custom properties
+
+| Property | Default | Description |
+| --- | --- | --- |
+| `--nys-feedback-entrance-delay` | `2s` | How long to wait before the component animates in. |
+
+NYSDS has no motion tokens, so the component sets its own durations and
+easing.
 
 ### Methods
 
@@ -109,6 +124,10 @@ slide's own script, so the playground shows and runs the real source.
 - Decks save under their own key prefix, so they don't mix with the main
   playground's decks. Both sites share the `its-hcd.github.io` origin, and so
   the same IndexedDB store.
+- The preview scrolls past the code drawer. The drawer floats over the bottom
+  of the preview, so upstream, the end of a long slide sits behind it with
+  nothing to scroll. The host now tells the preview how much the drawer covers,
+  and the preview adds that much room at the bottom.
 
 For everything else about the playground, see the
 [NYSDS Playground README](https://github.com/ITS-HCD/nysds-playground#readme).

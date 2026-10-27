@@ -6,6 +6,31 @@
  * and the line numbers correct.
  */
 
+/** The message the preview sends to ask how much the code drawer covers. */
+export const DRAWER_SPACE_REQUEST = 'pg-drawer-space-request';
+
+/** The message the host sends back, with the covered height in `px`. */
+export const DRAWER_SPACE_REPLY = 'pg-drawer-space';
+
+/**
+ * Adds scroll room to the preview for the code drawer.
+ *
+ * The drawer floats over the bottom of the preview, so the preview document is
+ * taller than the part you can see. Without extra room, the end of a long slide
+ * sits behind the drawer with nothing to scroll. Padding on the root element
+ * adds that room, and user CSS rarely touches it. The script asks the host how
+ * much the drawer covers and listens for updates when the drawer moves.
+ */
+const DRAWER_SPACE_HEAD = [
+  '<style>html{padding-block-end:var(--pg-drawer-space,0px)}</style>',
+  '<script>',
+  `addEventListener('message',function(e){var d=e.data;`,
+  `if(e.source===parent&&d&&d.type==='${DRAWER_SPACE_REPLY}'){`,
+  `document.documentElement.style.setProperty('--pg-drawer-space',d.px+'px')}});`,
+  `parent.postMessage({type:'${DRAWER_SPACE_REQUEST}'},'*');`,
+  '</script>',
+].join('');
+
 /** The options that vary between wrappers. */
 export interface WrapperOptions {
   /** The absolute URL of the design system stylesheet. */
@@ -42,6 +67,7 @@ export function wrapUserHtml(userHtml: string, options: WrapperOptions): string 
     // back so a lone button doesn't sit against the edge. Deck base CSS and the
     // CSS tab load later, so either can set `body { margin: 0 }` to remove it.
     '<style>body{margin:8px}</style>',
+    DRAWER_SPACE_HEAD,
     options.extraHeadHtml ?? '',
     options.baseCss ? `<style>${options.baseCss}</style>` : '',
     '<link rel="stylesheet" href="./styles.css">',

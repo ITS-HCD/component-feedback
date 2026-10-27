@@ -8,15 +8,22 @@ import {LitElement, css, html, nothing} from 'lit';
  * stack them in one centered column. The layout follows the component's own
  * width through a container query, not the viewport.
  *
- * After someone answers, the buttons give way to a thank-you message and the
- * component fires `nys-feedback`. Set `submitted` to show the thank-you
- * message without an answer, for example when you already have one for this
- * session.
+ * The component waits two seconds after it renders, then slides in with one
+ * soft pulse to catch the eye. Its space is held while it waits, so the page
+ * doesn't shift. Set `--nys-feedback-entrance-delay` to change the wait.
+ *
+ * After someone answers, the buttons fade out, the panel shrinks to fit, and
+ * a thank-you message rises into place. Then the component fires
+ * `nys-feedback`. Set `submitted` to show the thank-you message without an
+ * answer, for example when you already have one for this session. Every
+ * animation is CSS, and each one tones down for `prefers-reduced-motion`.
  *
  * Requires the NYSDS styles and components (`nys-button`, `nys-icon`).
  *
  * @fires nys-feedback - Fired once when someone answers. `detail` holds
  *   `value` (`good` or `needs-improvement`) and `label` (the button text).
+ * @cssprop [--nys-feedback-entrance-delay=2s] - How long to wait before the
+ *   component animates in.
  */
 export class NysFeedback extends LitElement {
   static properties = {
@@ -38,6 +45,10 @@ export class NysFeedback extends LitElement {
 
   static styles = css`
     :host {
+      /* NYSDS has no motion tokens yet, so the timing lives here. */
+      --_ease-out: cubic-bezier(0.2, 0, 0, 1);
+      --_ease-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+
       display: block;
       container-type: inline-size;
       color: var(--nys-color-text);
@@ -48,6 +59,8 @@ export class NysFeedback extends LitElement {
       display: none;
     }
 
+    /* Frame and panel ---------------------------------------------------- */
+
     .frame {
       padding: var(--nys-space-100);
       background-color: var(--nys-color-surface);
@@ -55,17 +68,49 @@ export class NysFeedback extends LitElement {
       border: var(--nys-border-width-sm) solid var(--nys-color-neutral-100);
       border-radius: var(--nys-radius-xl);
       box-shadow: var(--nys-shadow-raised);
+      animation:
+        nys-feedback-enter 500ms var(--_ease-out) var(--nys-feedback-entrance-delay, 2s) both,
+        nys-feedback-pulse 1200ms ease-out
+          calc(var(--nys-feedback-entrance-delay, 2s) + 400ms);
     }
 
     .panel {
+      overflow: hidden;
+      padding: var(--nys-space-300);
+      background-color: var(--nys-color-theme-faint);
+      border-radius: var(--nys-radius-lg);
+    }
+
+    /*
+     * Each step sits in a one-row grid. Moving that row between 1fr and 0fr
+     * animates its height, so the panel shrinks or grows to fit whichever
+     * step shows. The panel clips the step on its way out.
+     */
+    .collapse {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 450ms var(--_ease-out);
+    }
+
+    .collapse--confirmation {
+      grid-template-rows: 0fr;
+    }
+
+    .step {
+      min-height: 0;
+    }
+
+    /* Prompt ------------------------------------------------------------- */
+
+    .step--prompt {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: var(--nys-space-250);
-      padding: var(--nys-space-300);
-      background-color: var(--nys-color-theme-faint);
-      border-radius: var(--nys-radius-lg);
       text-align: center;
+      transition:
+        opacity 250ms ease 250ms,
+        visibility 0s;
     }
 
     .prompt {
@@ -96,6 +141,20 @@ export class NysFeedback extends LitElement {
       gap: var(--nys-space-200);
     }
 
+    /* Thank-you message -------------------------------------------------- */
+
+    .step--confirmation {
+      display: flex;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(var(--nys-space-200));
+      transition:
+        opacity 150ms ease,
+        transform 150ms ease,
+        visibility 0s linear 150ms;
+    }
+
     .confirmation {
       display: flex;
       align-items: center;
@@ -117,21 +176,117 @@ export class NysFeedback extends LitElement {
       border-radius: var(--nys-radius-sm);
     }
 
+    .confirmation nys-icon {
+      transform: scale(0.4);
+      transition: transform 150ms ease;
+    }
+
+    /* Answered ----------------------------------------------------------- */
+
+    :host([submitted]) .collapse {
+      transition-delay: 150ms;
+    }
+
+    :host([submitted]) .collapse--prompt {
+      grid-template-rows: 0fr;
+    }
+
+    :host([submitted]) .collapse--confirmation {
+      grid-template-rows: 1fr;
+    }
+
+    :host([submitted]) .step--prompt {
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 200ms ease,
+        visibility 0s linear 200ms;
+    }
+
+    :host([submitted]) .step--confirmation {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition:
+        opacity 300ms ease 300ms,
+        transform 450ms var(--_ease-out) 300ms,
+        visibility 0s;
+    }
+
+    :host([submitted]) .confirmation nys-icon {
+      transform: none;
+      transition: transform 500ms var(--_ease-overshoot) 400ms;
+    }
+
+    /* Wide layout -------------------------------------------------------- */
+
     @container (min-width: 40rem) {
       .panel {
+        padding: var(--nys-space-300) var(--nys-space-400);
+      }
+
+      .step--prompt {
         flex-direction: row;
         justify-content: space-between;
-        padding: var(--nys-space-300) var(--nys-space-400);
         text-align: start;
       }
 
-      .panel--submitted {
+      .step--confirmation {
         justify-content: flex-start;
       }
 
       .actions {
         flex-shrink: 0;
         justify-content: flex-end;
+      }
+    }
+
+    /* Keyframes ---------------------------------------------------------- */
+
+    /* Hidden, not just transparent, while it waits, so nobody can tab into
+       buttons they can't see yet. */
+    @keyframes nys-feedback-enter {
+      from {
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(var(--nys-space-400)) scale(0.97);
+      }
+    }
+
+    @keyframes nys-feedback-pulse {
+      from {
+        box-shadow:
+          var(--nys-shadow-raised),
+          0 0 0 0 var(--nys-color-theme-mid);
+      }
+      to {
+        box-shadow:
+          var(--nys-shadow-raised),
+          0 0 0 var(--nys-space-200) transparent;
+      }
+    }
+
+    @keyframes nys-feedback-fade-in {
+      from {
+        visibility: hidden;
+        opacity: 0;
+      }
+    }
+
+    /* Fades stay, movement goes. */
+    @media (prefers-reduced-motion: reduce) {
+      .frame {
+        animation: nys-feedback-fade-in 400ms ease var(--nys-feedback-entrance-delay, 2s) both;
+      }
+
+      .collapse,
+      :host([submitted]) .collapse {
+        transition: none;
+      }
+
+      .step--confirmation,
+      .confirmation nys-icon {
+        transform: none;
       }
     }
   `;
@@ -169,7 +324,7 @@ export class NysFeedback extends LitElement {
         composed: true,
       }),
     );
-    // The button that had focus is gone, so move focus to the message.
+    // The button that had focus is fading out, so move focus to the message.
     await this.updateComplete;
     this.renderRoot.querySelector('.confirmation')?.focus();
   }
@@ -178,44 +333,46 @@ export class NysFeedback extends LitElement {
     const headingId = `${this._idPrefix}-heading`;
     const textId = `${this._idPrefix}-text`;
 
-    if (this.submitted) {
-      return html`
-        <div class="frame">
-          <div class="panel panel--submitted">
-            <p class="confirmation" tabindex="-1">
-              <nys-icon name="check_circle" size="24"></nys-icon>
-              ${this.confirmationText}
-            </p>
-          </div>
-        </div>
-      `;
-    }
-
+    // Both steps stay in the DOM so CSS can animate between them. The hidden
+    // one has `visibility: hidden`, which also keeps it out of the tab order
+    // and the accessibility tree.
     return html`
       <div class="frame">
-        <div
-          class="panel"
-          role="group"
-          aria-labelledby=${headingId}
-          aria-describedby=${this.text ? textId : nothing}
-        >
-          <div class="prompt">
-            <p class="heading" id=${headingId}>${this.heading}</p>
-            ${this.text ? html`<p class="text" id=${textId}>${this.text}</p>` : ''}
+        <div class="panel">
+          <div class="collapse collapse--prompt">
+            <div
+              class="step step--prompt"
+              role="group"
+              aria-labelledby=${headingId}
+              aria-describedby=${this.text ? textId : nothing}
+            >
+              <div class="prompt">
+                <p class="heading" id=${headingId}>${this.heading}</p>
+                ${this.text ? html`<p class="text" id=${textId}>${this.text}</p>` : ''}
+              </div>
+              <div class="actions">
+                <nys-button
+                  variant="filled"
+                  prefixIcon="thumb_up"
+                  label=${this.positiveLabel}
+                  @nys-click=${() => this._answer('good', this.positiveLabel)}
+                ></nys-button>
+                <nys-button
+                  variant="filled"
+                  prefixIcon="thumb_down"
+                  label=${this.negativeLabel}
+                  @nys-click=${() => this._answer('needs-improvement', this.negativeLabel)}
+                ></nys-button>
+              </div>
+            </div>
           </div>
-          <div class="actions">
-            <nys-button
-              variant="filled"
-              prefixIcon="thumb_up"
-              label=${this.positiveLabel}
-              @nys-click=${() => this._answer('good', this.positiveLabel)}
-            ></nys-button>
-            <nys-button
-              variant="filled"
-              prefixIcon="thumb_down"
-              label=${this.negativeLabel}
-              @nys-click=${() => this._answer('needs-improvement', this.negativeLabel)}
-            ></nys-button>
+          <div class="collapse collapse--confirmation">
+            <div class="step step--confirmation">
+              <p class="confirmation" tabindex="-1">
+                <nys-icon name="check_circle" size="24"></nys-icon>
+                ${this.confirmationText}
+              </p>
+            </div>
           </div>
         </div>
       </div>
