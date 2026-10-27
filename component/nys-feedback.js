@@ -1,6 +1,18 @@
 import {LitElement, css, html, nothing} from 'lit';
 
 /**
+ * The question at each heading level `headingLevel` accepts. There's no h1:
+ * that belongs to the page's own title.
+ */
+const HEADINGS = {
+  h2: (id, text) => html`<h2 class="heading" id=${id}>${text}</h2>`,
+  h3: (id, text) => html`<h3 class="heading" id=${id}>${text}</h3>`,
+  h4: (id, text) => html`<h4 class="heading" id=${id}>${text}</h4>`,
+  h5: (id, text) => html`<h5 class="heading" id=${id}>${text}</h5>`,
+  h6: (id, text) => html`<h6 class="heading" id=${id}>${text}</h6>`,
+};
+
+/**
  * Asks people to rate an experience they just finished, such as renewing a
  * license, with one positive and one negative answer.
  *
@@ -22,6 +34,11 @@ import {LitElement, css, html, nothing} from 'lit';
  * answer, for example when you already have one for this session. Every
  * animation is CSS, and each one tones down for `prefers-reduced-motion`.
  *
+ * The question is a real heading, so screen reader users can find it by
+ * heading. Set `headingLevel` to fit the page's outline, the way `nys-card`
+ * does, from `h2` through `h6`. The level changes structure only; the
+ * question looks the same at every level.
+ *
  * Requires the NYSDS styles and components (`nys-button`, `nys-icon`).
  *
  * @fires nys-feedback - Fired once when someone answers. `detail` holds
@@ -33,6 +50,8 @@ export class NysFeedback extends LitElement {
   static properties = {
     /** The question. Keep it short. */
     heading: {type: String},
+    /** Heading level for the question, `h2` through `h6`. Size never changes. */
+    headingLevel: {type: String, reflect: true},
     /** Names the experience the question is about. */
     text: {type: String},
     /** Label for the positive answer. */
@@ -144,6 +163,7 @@ export class NysFeedback extends LitElement {
       gap: var(--nys-space-50);
     }
 
+    /* The same size at every level: headingLevel is for structure only. */
     .heading {
       margin: 0;
       font-size: var(--nys-font-size-ui-lg);
@@ -350,6 +370,7 @@ export class NysFeedback extends LitElement {
   constructor() {
     super();
     this.heading = 'How did we do?';
+    this.headingLevel = 'h2';
     this.text = '';
     this.positiveLabel = 'Good';
     this.negativeLabel = 'Needs improvement';
@@ -409,6 +430,9 @@ export class NysFeedback extends LitElement {
   render() {
     const headingId = `${this._idPrefix}-heading`;
     const textId = `${this._idPrefix}-text`;
+    // An unknown level, h1 included, falls back to the default rather than
+    // to a paragraph.
+    const renderHeading = HEADINGS[this.headingLevel] ?? HEADINGS.h2;
 
     // Both steps stay in the DOM so CSS can animate between them. The hidden
     // one has `visibility: hidden`, which also keeps it out of the tab order
@@ -425,7 +449,7 @@ export class NysFeedback extends LitElement {
                 aria-describedby=${this.text ? textId : nothing}
               >
                 <div class="prompt">
-                  <p class="heading" id=${headingId}>${this.heading}</p>
+                  ${renderHeading(headingId, this.heading)}
                   ${this.text ? html`<p class="text" id=${textId}>${this.text}</p>` : ''}
                 </div>
                 <div class="actions">

@@ -59,6 +59,7 @@ The page needs the NYSDS styles and components loaded, because
 | Attribute | Default | Description |
 | --- | --- | --- |
 | `heading` | `How did we do?` | The question. |
+| `headingLevel` | `h2` | Heading level for the question, `h2` through `h6`, so it fits the page's outline. The question looks the same at every level. `h1` isn't allowed, because that belongs to the page title, and falls back to `h2`. |
 | `text` | (empty) | Names the experience the question is about. |
 | `positiveLabel` | `Good` | Label for the positive answer. |
 | `negativeLabel` | `Needs improvement` | Label for the negative answer. |
